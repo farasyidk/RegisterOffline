@@ -16,6 +16,7 @@ let project = Project(
                 "CFBundleDisplayName": "$(APP_NAME)",
                 "UILaunchScreen": [:],
                 "UIRequiresFullScreen": true,
+                "NSCameraUsageDescription": "Aplikasi membutuhkan akses kamera untuk mengambil foto KTP.",
                 "BASE_URL": "$(BASE_URL)"
             ]),
             sources: ["Targets/App/Sources/**"],

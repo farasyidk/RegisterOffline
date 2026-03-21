@@ -4,6 +4,7 @@ import Core
 import CoreProtocol
 import AuthFeature
 import ProfileFeature
+import MemberFeature
 
 @main
 struct RegisterOfflineApp: App {
@@ -34,6 +35,7 @@ struct RegisterOfflineApp: App {
 }
 
 struct AppRootView: View {
+    @Environment(\.modelContext) private var modelContext
     @ObservedObject var authViewModel: AuthViewModel
     let authRepository: AuthRepositoryProtocol
     @State private var showSplash = true
@@ -59,6 +61,14 @@ struct AppRootView: View {
                                 ProfileView(authRepository: authRepository, onLogout: {
                                     authViewModel.logout()
                                 })
+                            }
+                            NavigationLink("Tambah Data Registrasi") {
+                                RegisterFormView(viewModel: RegisterViewModel(
+                                    memberRepository: MemberRepository(
+                                        networkService: NetworkManager(tokenProvider: KeychainTokenProvider()),
+                                        modelContext: modelContext
+                                    )
+                                ))
                             }
                             .padding()
                             .background(Color.blue)

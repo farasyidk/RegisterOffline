@@ -66,6 +66,7 @@ public final class MemberRepository: MemberRepositoryProtocol {
         appendFormField(named: "name", value: member.name)
         appendFormField(named: "nik", value: member.nik)
         if let phone = member.phone { appendFormField(named: "phone", value: phone) }
+        if let gender = member.gender { appendFormField(named: "jenis_kelamin", value: gender) }
         if let bp = member.birthPlace { appendFormField(named: "birth_place", value: bp) }
         if let bd = member.birthDate { appendFormField(named: "birth_date", value: bd) }
         if let st = member.status { appendFormField(named: "status", value: st) }
@@ -88,20 +89,26 @@ public final class MemberRepository: MemberRepositoryProtocol {
         if let dpos = member.domicilePostalCode { appendFormField(named: "kode_pos_domisili", value: dpos) }
         
         // Append Images
-        if let ktpPath = member.ktpLocalPath, let ktpUrl = URL(string: ktpPath), let imgData = try? Data(contentsOf: ktpUrl) {
-            append("--\(boundary)\r\n")
-            append("Content-Disposition: form-data; name=\"ktp_file\"; filename=\"ktp_primary.jpg\"\r\n")
-            append("Content-Type: image/jpeg\r\n\r\n")
-            bodyData.append(imgData)
-            append("\r\n")
+        if let ktpPath = member.ktpLocalPath {
+            let ktpUrl = URL(fileURLWithPath: ktpPath)
+            if let imgData = try? Data(contentsOf: ktpUrl) {
+                append("--\(boundary)\r\n")
+                append("Content-Disposition: form-data; name=\"ktp_file\"; filename=\"ktp_primary.jpg\"\r\n")
+                append("Content-Type: image/jpeg\r\n\r\n")
+                bodyData.append(imgData)
+                append("\r\n")
+            }
         }
         
-        if let secPath = member.ktpSecondaryLocalPath, let secUrl = URL(string: secPath), let imgData = try? Data(contentsOf: secUrl) {
-            append("--\(boundary)\r\n")
-            append("Content-Disposition: form-data; name=\"ktp_file_secondary\"; filename=\"ktp_second.jpg\"\r\n")
-            append("Content-Type: image/jpeg\r\n\r\n")
-            bodyData.append(imgData)
-            append("\r\n")
+        if let secPath = member.ktpSecondaryLocalPath {
+            let secUrl = URL(fileURLWithPath: secPath)
+            if let imgData = try? Data(contentsOf: secUrl) {
+                append("--\(boundary)\r\n")
+                append("Content-Disposition: form-data; name=\"ktp_file_secondary\"; filename=\"ktp_second.jpg\"\r\n")
+                append("Content-Type: image/jpeg\r\n\r\n")
+                bodyData.append(imgData)
+                append("\r\n")
+            }
         }
         
         append("--\(boundary)--\r\n")

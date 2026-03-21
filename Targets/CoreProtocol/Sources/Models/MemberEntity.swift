@@ -9,6 +9,7 @@ public final class MemberEntity {
     public var phone: String?
     public var birthPlace: String?
     public var birthDate: String?
+    public var gender: String?
     public var status: String?
     public var occupation: String?
     
