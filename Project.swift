@@ -11,8 +11,9 @@ let project = Project(
             name: "App",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.zenith.registeroffline",
+            bundleId: "$(APP_BUNDLE_ID)",
             infoPlist: .extendingDefault(with: [
+                "CFBundleDisplayName": "$(APP_NAME)",
                 "UILaunchScreen": [:],
                 "UIRequiresFullScreen": true,
                 "BASE_URL": "$(BASE_URL)"

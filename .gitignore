@@ -3,3 +3,5 @@
 Derived/
 .tuist-generated
 .DS_Store
+Targets/App/Prod.xcconfig
+Targets/App/Test.xcconfig
