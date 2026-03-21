@@ -24,6 +24,7 @@ let project = Project(
                 .target(name: "Core"),
                 .target(name: "DesignSystem"),
                 .target(name: "AuthFeature"),
+                .target(name: "ProfileFeature"),
                 .target(name: "MemberFeature"),
                 .target(name: "SyncFeature")
             ]
@@ -65,6 +66,19 @@ let project = Project(
             bundleId: "com.zenith.authfeature",
             infoPlist: .default,
             sources: ["Targets/AuthFeature/Sources/**"],
+            dependencies: [
+                .target(name: "CoreProtocol"),
+                .target(name: "Core"),
+                .target(name: "DesignSystem")
+            ]
+        ),
+        .target(
+            name: "ProfileFeature",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.zenith.profilefeature",
+            infoPlist: .default,
+            sources: ["Targets/ProfileFeature/Sources/**"],
             dependencies: [
                 .target(name: "CoreProtocol"),
                 .target(name: "Core"),

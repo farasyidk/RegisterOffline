@@ -2,6 +2,8 @@ import Foundation
 import CoreProtocol
 
 public final class NetworkManager: NetworkServiceProtocol {
+    private struct APIErrorResponse: Decodable { let error: String }
+    
     private let tokenProvider: TokenProviderProtocol
     
     public init(tokenProvider: TokenProviderProtocol) {
@@ -35,6 +37,9 @@ public final class NetworkManager: NetworkServiceProtocol {
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
+            if let errResp = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+                throw NetworkError(errResp.error)
+            }
             throw NetworkError("HTTP Error: \(httpResponse.statusCode)")
         }
         
@@ -73,6 +78,9 @@ public final class NetworkManager: NetworkServiceProtocol {
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
+            if let errResp = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+                throw NetworkError(errResp.error)
+            }
             if let errorMsg = String(data: data, encoding: .utf8) {
                 print("Multipart error details: \(errorMsg)")
             }
