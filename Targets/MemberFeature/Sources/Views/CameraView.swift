@@ -213,7 +213,7 @@ public struct CameraView: View {
             controller.stop()
         }
         // When image is captured, we navigate to confirmation or call callback and dismiss
-        .onChange(of: controller.capturedImage) { image in
+        .onChange(of: controller.capturedImage) { _, image in
             if let img = image {
                 onCaptured(img)
             }

@@ -1,6 +1,6 @@
 import Foundation
 import UIKit
-import Vision
+@preconcurrency import Vision
 import SwiftUI
 
 @MainActor
@@ -46,9 +46,12 @@ public class PhotoConfirmationViewModel: ObservableObject {
         // Use an accurate recognition level to enforce quality check
         request.recognitionLevel = .accurate
         
+        // Use local handler reference to solve non-Sendable capture in @Sendable closure
+        let handler = requestHandler
+        
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                try requestHandler.perform([request])
+                try handler.perform([request])
             } catch {
                 DispatchQueue.main.async { [weak self] in
                     self?.isGoodQuality = false

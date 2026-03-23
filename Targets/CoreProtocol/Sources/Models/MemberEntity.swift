@@ -35,10 +35,15 @@ public final class MemberEntity {
     
     public var syncStatus: String // "Draft" or "Synced"
     
-    public init(id: UUID = UUID(), name: String, nik: String, syncStatus: String = "Draft") {
+    public var ktpUrl: String?
+    public var ktpUrlSecondary: String?
+    
+    public init(id: UUID = UUID(), name: String, nik: String, syncStatus: String = "Draft", ktpUrl: String? = nil, ktpUrlSecondary: String? = nil) {
         self.id = id
         self.name = name
         self.nik = nik
         self.syncStatus = syncStatus
+        self.ktpUrl = ktpUrl
+        self.ktpUrlSecondary = ktpUrlSecondary
     }
 }

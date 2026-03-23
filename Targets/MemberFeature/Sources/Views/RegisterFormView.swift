@@ -181,7 +181,7 @@ public struct RegisterFormView: View {
                     Spacer()
                 }
                 .padding()
-                .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
+                .padding(.top, (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.keyWindow?.safeAreaInsets.top ?? 0)
                 .background(Color.white)
                 Divider()
             }
@@ -236,7 +236,7 @@ public struct RegisterFormView: View {
                 }
             )
         }
-        .onChange(of: viewModel.isSavedSuccessfully) { success in
+        .onChange(of: viewModel.isSavedSuccessfully) { _, success in
             if success {
                 toastMessage = "Draft berhasil disimpan"
                 withAnimation { showToast = true }
@@ -246,7 +246,7 @@ public struct RegisterFormView: View {
                 }
             }
         }
-        .onChange(of: viewModel.isUploadSuccessfully) { success in
+        .onChange(of: viewModel.isUploadSuccessfully) { _, success in
             if success {
                 toastMessage = "Data berhasil diunggah ke server!"
                 withAnimation { showToast = true }

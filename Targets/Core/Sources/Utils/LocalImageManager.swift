@@ -6,12 +6,25 @@ public final class LocalImageManager {
     
     private init() {}
     
-    public func saveImage(_ image: UIImage, fileName: String) throws -> String {
-        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "LocalImageManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Documents directory not found"])
+    // Fungsi bantuan untuk mendapatkan URL dinamis berdasarkan filename
+    public func getFileURL(for path: String) -> URL? {
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+        
+        // Ambil elemen terakhir jika string merupakan URI lengkap, atau gunakan string tersebut jika ia murni filename
+        let fileName: String
+        if path.starts(with: "file://") || path.contains("/") {
+            fileName = URL(fileURLWithPath: path).lastPathComponent
+        } else {
+            fileName = path
         }
         
-        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+        return documentsDirectory.appendingPathComponent(fileName)
+    }
+    
+    public func saveImage(_ image: UIImage, fileName: String) throws -> String {
+        guard let fileURL = getFileURL(for: fileName) else {
+            throw NSError(domain: "LocalImageManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Documents directory not found"])
+        }
         
         var compressionQuality: CGFloat = 0.8
         var imageData = image.jpegData(compressionQuality: compressionQuality)
@@ -26,19 +39,19 @@ public final class LocalImageManager {
         }
         
         try finalData.write(to: fileURL)
-        return fileURL.absoluteString
+        return fileName // Return purely the filename, let getFileURL construct absolute dynamically
     }
     
-    public func loadImage(from urlString: String) -> UIImage? {
-        guard let url = URL(string: urlString),
+    public func loadImage(from path: String) -> UIImage? {
+        guard let url = getFileURL(for: path),
               let data = try? Data(contentsOf: url) else {
             return nil
         }
         return UIImage(data: data)
     }
     
-    public func deleteImage(at urlString: String) {
-        guard let url = URL(string: urlString) else { return }
+    public func deleteImage(at path: String) {
+        guard let url = getFileURL(for: path) else { return }
         try? FileManager.default.removeItem(at: url)
     }
 }

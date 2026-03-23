@@ -17,8 +17,14 @@ public protocol Endpoint {
 
 public struct NetworkError: Error, LocalizedError {
     public let message: String
-    public init(_ message: String) { self.message = message }
+    public let isUnauthorized: Bool
+    public init(_ message: String, isUnauthorized: Bool = false) {
+        self.message = message
+        self.isUnauthorized = isUnauthorized
+    }
     public var errorDescription: String? { return message }
+    
+    public static let unauthorized = NetworkError("Silakan login kembali", isUnauthorized: true)
 }
 
 public protocol NetworkServiceProtocol {

@@ -24,12 +24,30 @@ struct RegisterOfflineApp: App {
         self.authRepository = authRepo
         
         self._authViewModel = StateObject(wrappedValue: AuthViewModel(authRepository: authRepo))
+        
+        #if DEBUG
+        loadRocketSimConnect()
+        #endif
+    }
+    
+    private func loadRocketSimConnect() {
+        let bundlePath = "/Applications/RocketSim.app/Contents/Frameworks/RocketSimConnectLinker.nocache.framework"
+        if let bundle = Bundle(path: bundlePath) {
+            bundle.load()
+            print("✅ RocketSim Connect successfully linked")
+        } else {
+            print("❌ Failed to Connect RocketSim bundle")
+        }
     }
     
     var body: some Scene {
         WindowGroup {
-            AppRootView(authViewModel: authViewModel, authRepository: authRepository)
-                .modelContainer(for: [MemberEntity.self])
+            AppRootView(
+                authViewModel: authViewModel,
+                authRepository: authRepository,
+                networkManager: networkManager
+            )
+            .modelContainer(for: [MemberEntity.self])
         }
     }
 }
@@ -38,6 +56,7 @@ struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
     @ObservedObject var authViewModel: AuthViewModel
     let authRepository: AuthRepositoryProtocol
+    let networkManager: NetworkServiceProtocol
     @State private var showSplash = true
     
     var body: some View {
@@ -52,31 +71,30 @@ struct AppRootView: View {
                     }
             } else {
                 if authViewModel.isAuthenticated {
-                    NavigationView {
-                        VStack(spacing: 20) {
-                            Text("Dashboard Utama")
-                                .font(.largeTitle)
-                            
-                            NavigationLink("Profil & Logout") {
-                                ProfileView(authRepository: authRepository, onLogout: {
+                    NavigationStack {
+                        MemberDashboardView(
+                            viewModel: MemberDashboardViewModel(
+                                memberRepository: MemberRepository(
+                                    networkService: networkManager,
+                                    modelContext: modelContext
+                                ),
+                                authRepository: authRepository
+                            ),
+                            profileViewProvider: { 
+                                AnyView(ProfileView(authRepository: authRepository, onLogout: {
                                     authViewModel.logout()
-                                })
+                                }))
+                            },
+                            loginViewProvider: {
+                                AnyView(LoginView(viewModel: authViewModel))
+                            },
+                            onLogout: {
+                                authViewModel.logout()
                             }
-                            NavigationLink("Tambah Data Registrasi") {
-                                RegisterFormView(viewModel: RegisterViewModel(
-                                    memberRepository: MemberRepository(
-                                        networkService: NetworkManager(tokenProvider: KeychainTokenProvider()),
-                                        modelContext: modelContext
-                                    )
-                                ))
-                            }
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                        }
+                        )
                     }
-                } else {
+                }
+ else {
                     LoginView(viewModel: authViewModel)
                 }
             }

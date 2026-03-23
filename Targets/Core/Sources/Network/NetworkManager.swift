@@ -37,7 +37,13 @@ public final class NetworkManager: NetworkServiceProtocol {
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
+            if httpResponse.statusCode == 401 {
+                throw NetworkError.unauthorized
+            }
             if let errResp = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+                if errResp.error == "Invalid Token" {
+                    throw NetworkError.unauthorized
+                }
                 throw NetworkError(errResp.error)
             }
             throw NetworkError("HTTP Error: \(httpResponse.statusCode)")
@@ -78,7 +84,13 @@ public final class NetworkManager: NetworkServiceProtocol {
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
+            if httpResponse.statusCode == 401 {
+                throw NetworkError.unauthorized
+            }
             if let errResp = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+                if errResp.error == "Invalid Token" {
+                    throw NetworkError.unauthorized
+                }
                 throw NetworkError(errResp.error)
             }
             if let errorMsg = String(data: data, encoding: .utf8) {

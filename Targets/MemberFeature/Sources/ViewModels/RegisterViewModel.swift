@@ -63,8 +63,55 @@ public final class RegisterViewModel: ObservableObject {
     @Published public var isSavedSuccessfully: Bool = false
     @Published public var isUploadSuccessfully: Bool = false
     
-    public init(memberRepository: MemberRepositoryProtocol) {
+    private var editingMember: MemberEntity?
+    
+    public init(memberRepository: MemberRepositoryProtocol, editingMember: MemberEntity? = nil) {
         self.memberRepository = memberRepository
+        self.editingMember = editingMember
+        
+        if let editingMember = editingMember {
+            self.fullName = editingMember.name
+            self.nik = editingMember.nik
+            self.phoneNumber = editingMember.phone ?? ""
+            self.birthPlace = editingMember.birthPlace ?? ""
+            
+            if let dateString = editingMember.birthDate {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd"
+                if let date = formatter.date(from: dateString) {
+                    self.birthDate = date
+                }
+            }
+            
+            self.gender = editingMember.gender ?? ""
+            self.status = editingMember.status ?? ""
+            self.occupation = editingMember.occupation ?? ""
+            
+            self.ktpAddress = editingMember.address ?? ""
+            self.ktpProvince = editingMember.province ?? ""
+            self.ktpCity = editingMember.cityRegency ?? ""
+            self.ktpDistrict = editingMember.district ?? ""
+            self.ktpVillage = editingMember.subDistrict ?? ""
+            self.ktpPostalCode = editingMember.postalCode ?? ""
+            
+            self.domicileAddress = editingMember.domicileAddress ?? ""
+            self.domicileProvince = editingMember.domicileProvince ?? ""
+            self.domicileCity = editingMember.domicileCityRegency ?? ""
+            self.domicileDistrict = editingMember.domicileDistrict ?? ""
+            self.domicileVillage = editingMember.domicileSubDistrict ?? ""
+            self.domicilePostalCode = editingMember.domicilePostalCode ?? ""
+            
+            if let path1 = editingMember.ktpLocalPath {
+                self.ktpPaths.append(path1)
+            }
+            if let path2 = editingMember.ktpSecondaryLocalPath {
+                self.ktpPaths.append(path2)
+            }
+            
+            if !domicileAddress.isEmpty && domicileAddress == ktpAddress {
+                self.isDomicileSameAsKtp = true
+            }
+        }
     }
     
     public var isFormValid: Bool {
@@ -82,7 +129,15 @@ public final class RegisterViewModel: ObservableObject {
         isSaving = true
         errorMessage = nil
         
-        let entity = MemberEntity(name: fullName, nik: nik, syncStatus: "Draft")
+        let entity: MemberEntity
+        if let editing = editingMember {
+            entity = editing
+            entity.name = fullName
+            entity.nik = nik
+            entity.syncStatus = "Draft"
+        } else {
+            entity = MemberEntity(name: fullName, nik: nik, syncStatus: "Draft")
+        }
         entity.phone = phoneNumber
         entity.birthPlace = birthPlace
         entity.birthDate = formattedBirthDate
@@ -132,7 +187,15 @@ public final class RegisterViewModel: ObservableObject {
         isSaving = true
         errorMessage = nil
         
-        let entity = MemberEntity(name: fullName, nik: nik, syncStatus: "Synced")
+        let entity: MemberEntity
+        if let editing = editingMember {
+            entity = editing
+            entity.name = fullName
+            entity.nik = nik
+            entity.syncStatus = "Synced"
+        } else {
+            entity = MemberEntity(name: fullName, nik: nik, syncStatus: "Synced")
+        }
         entity.phone = phoneNumber
         entity.birthPlace = birthPlace
         entity.birthDate = formattedBirthDate

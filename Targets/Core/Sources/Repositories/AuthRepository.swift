@@ -54,6 +54,7 @@ public final class AuthRepository: AuthRepositoryProtocol {
     
     public func logout() {
         tokenProvider.clearToken()
+        UserDefaults.standard.removeObject(forKey: "cached_profile")
     }
     
     public func isUserLoggedIn() -> Bool {
@@ -69,6 +70,18 @@ public final class AuthRepository: AuthRepositoryProtocol {
             var body: Data? = nil
         }
         
-        return try await networkService.request(endpoint: ProfileEndpoint())
+        let profile: ProfileResponse = try await networkService.request(endpoint: ProfileEndpoint())
+        
+        // Cache profile
+        if let encoded = try? JSONEncoder().encode(profile) {
+            UserDefaults.standard.set(encoded, forKey: "cached_profile")
+        }
+        
+        return profile
+    }
+    
+    public func getCachedProfile() -> ProfileResponse? {
+        guard let data = UserDefaults.standard.data(forKey: "cached_profile") else { return nil }
+        return try? JSONDecoder().decode(ProfileResponse.self, from: data)
     }
 }

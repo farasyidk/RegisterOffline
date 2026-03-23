@@ -18,7 +18,9 @@ public final class MemberRepository: MemberRepositoryProtocol {
     }
     
     public func saveDraftMember(_ member: MemberEntity) async throws {
-        modelContext.insert(member)
+        if member.modelContext == nil {
+            modelContext.insert(member)
+        }
         try modelContext.save()
     }
     
@@ -126,5 +128,43 @@ public final class MemberRepository: MemberRepositoryProtocol {
         }
         
         return try await networkService.request(endpoint: GetMembersEndpoint())
+    }
+    
+    public func getSyncedMembersFromLocal() async throws -> [MemberEntity] {
+        let descriptor = FetchDescriptor<MemberEntity>(predicate: #Predicate { $0.syncStatus == "Synced" })
+        return try modelContext.fetch(descriptor)
+    }
+    
+    public func syncMembersWithAPI(_ members: [MemberListResponse]) async throws {
+        let descriptor = FetchDescriptor<MemberEntity>(predicate: #Predicate { $0.syncStatus == "Synced" })
+        var localSynced = try modelContext.fetch(descriptor)
+        
+        for apiMember in members {
+            let nik = apiMember.nik
+            let name = apiMember.name
+            
+            if let index = localSynced.firstIndex(where: { $0.nik == nik && $0.name == name }) {
+                let member = localSynced.remove(at: index)
+                member.ktpUrl = apiMember.ktpUrl
+                member.ktpUrlSecondary = apiMember.ktpUrlSecondary
+                if let phone = apiMember.phone { member.phone = phone }
+            } else {
+                let newMember = MemberEntity(
+                    name: apiMember.name,
+                    nik: apiMember.nik,
+                    syncStatus: "Synced",
+                    ktpUrl: apiMember.ktpUrl,
+                    ktpUrlSecondary: apiMember.ktpUrlSecondary
+                )
+                newMember.phone = apiMember.phone
+                modelContext.insert(newMember)
+            }
+        }
+        
+        for member in localSynced {
+            modelContext.delete(member)
+        }
+        
+        try modelContext.save()
     }
 }

@@ -12,15 +12,21 @@ public final class ProfileViewModel: ObservableObject {
     
     public init(authRepository: AuthRepositoryProtocol) {
         self.authRepository = authRepository
+        self.profile = authRepository.getCachedProfile()
     }
     
     public func fetchProfile() async {
-        isLoading = true
+        if profile == nil {
+            isLoading = true
+        }
         errorMessage = nil
         do {
-            profile = try await authRepository.getProfile()
+            let fetchedProfile = try await authRepository.getProfile()
+            profile = fetchedProfile
         } catch {
-            errorMessage = error.localizedDescription
+            if profile == nil {
+                errorMessage = error.localizedDescription
+            }
         }
         isLoading = false
     }

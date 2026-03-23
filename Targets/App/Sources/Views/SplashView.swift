@@ -7,9 +7,10 @@ public struct SplashView: View {
         ZStack {
             Color.brandDarkBlue.ignoresSafeArea()
             VStack(spacing: 24) {
-                Image(systemName: "person.text.rectangle.fill")
+                DesignSystemAssets.icon
+                    .renderingMode(.template)
                     .resizable()
-                    .scaledToFit()
+                    .aspectRatio(contentMode: .fit)
                     .frame(width: 80, height: 80)
                     .foregroundColor(.white)
                 Text("Register Offline")

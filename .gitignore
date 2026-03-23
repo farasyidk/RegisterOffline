@@ -5,3 +5,4 @@ Derived/
 .DS_Store
 Targets/App/Prod.xcconfig
 Targets/App/Test.xcconfig
+.build

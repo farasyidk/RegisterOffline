@@ -7,6 +7,8 @@ public protocol MemberRepositoryProtocol {
     func updateMemberSyncStatus(id: UUID, status: String) async throws
     func uploadMember(_ member: MemberEntity) async throws -> MemberUploadResponse
     func getSyncedMembers() async throws -> [MemberListResponse]
+    func getSyncedMembersFromLocal() async throws -> [MemberEntity]
+    func syncMembersWithAPI(_ members: [MemberListResponse]) async throws
 }
 
 public protocol AuthRepositoryProtocol {
@@ -15,4 +17,5 @@ public protocol AuthRepositoryProtocol {
     func logout()
     func isUserLoggedIn() -> Bool
     func getProfile() async throws -> ProfileResponse
+    func getCachedProfile() -> ProfileResponse?
 }
