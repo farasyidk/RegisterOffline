@@ -18,6 +18,8 @@ public struct RegisterFormView: View {
     
     public var body: some View {
         ZStack(alignment: .top) {
+            Color(UIColor.systemGroupedBackground).ignoresSafeArea()
+
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     
@@ -39,16 +41,34 @@ public struct RegisterFormView: View {
                         .cornerRadius(8)
                     }
                     
-                    FormTextField(label: "Nomor Handphone", placeholder: "Masukkan nomor handphone", text: $viewModel.phoneNumber, isMandatory: true, keyboardType: .numberPad)
+                    FormTextField(
+                        label: "Nomor Handphone",
+                        placeholder: "Masukkan nomor handphone",
+                        text: $viewModel.phoneNumber,
+                        isMandatory: true,
+                        keyboardType: .numberPad,
+                        helpText: !viewModel.phoneNumber.isEmpty && !viewModel.isPhoneValid ? "Min 8 digit, Maks 15 digit" : nil,
+                        isError: !viewModel.phoneNumber.isEmpty && !viewModel.isPhoneValid,
+                        maxLength: 15
+                    )
                     
-                    FormTextField(label: "NIK", placeholder: "16 digit no KTP", text: $viewModel.nik, isMandatory: true, keyboardType: .numberPad)
+                    FormTextField(
+                        label: "NIK",
+                        placeholder: "16 digit no KTP",
+                        text: $viewModel.nik,
+                        isMandatory: true,
+                        keyboardType: .numberPad,
+                        helpText: !viewModel.nik.isEmpty && !viewModel.isNikValid ? "Nomor NIK harus 16 digit" : nil,
+                        isError: !viewModel.nik.isEmpty && !viewModel.isNikValid,
+                        maxLength: 16
+                    )
                     
                     // KTP Photos Upload
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(spacing: 2) {
                             Text("Foto KTP")
                                 .font(.footnote)
-                                .foregroundColor(.darkGrayText)
+                                .foregroundColor(.secondary)
                             Text("*")
                                 .font(.footnote)
                                 .foregroundColor(.red)
@@ -90,12 +110,12 @@ public struct RegisterFormView: View {
                         FormTextField(label: "Tempat Lahir", placeholder: "Masukkan tempat lahir sesuai KTP", text: $viewModel.birthPlace)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Tanggal Lahir").font(.footnote).foregroundColor(.darkGrayText)
+                            Text("Tanggal Lahir").font(.footnote).foregroundColor(.secondary)
                             DatePicker("", selection: $viewModel.birthDate, displayedComponents: .date)
                                 .labelsHidden()
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.white)
+                                .background(Color(UIColor.secondarySystemBackground))
                                 .cornerRadius(8)
                                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(UIColor.systemGray4), lineWidth: 1))
                         }
@@ -118,7 +138,15 @@ public struct RegisterFormView: View {
                         FormDropdown(label: "Kota/Kabupaten", placeholder: "Pilih Kota/Kabupaten", selection: $viewModel.ktpCity, options: viewModel.cities)
                         FormDropdown(label: "Kecamatan", placeholder: "Pilih Kecamatan", selection: $viewModel.ktpDistrict, options: viewModel.districts)
                         FormDropdown(label: "Kelurahan", placeholder: "Pilih Kelurahan", selection: $viewModel.ktpVillage, options: viewModel.villages)
-                        FormTextField(label: "Kode Pos", placeholder: "Masukkan Kode Pos", text: $viewModel.ktpPostalCode, keyboardType: .numberPad)
+                        FormTextField(
+                            label: "Kode Pos",
+                            placeholder: "Masukkan Kode Pos",
+                            text: $viewModel.ktpPostalCode,
+                            keyboardType: .numberPad,
+                            helpText: !viewModel.ktpPostalCode.isEmpty && !viewModel.isKtpPostalCodeValid ? "Harus 5 digit" : nil,
+                            isError: !viewModel.ktpPostalCode.isEmpty && !viewModel.isKtpPostalCodeValid,
+                            maxLength: 5
+                        )
                     }
                     
                     Divider()
@@ -137,7 +165,7 @@ public struct RegisterFormView: View {
                                     .foregroundColor(viewModel.isDomicileSameAsKtp ? Color.brandDarkBlue : .gray)
                                 Text("Alamat domisili sama dengan alamat pada KTP")
                                     .font(.footnote)
-                                    .foregroundColor(.darkGrayText)
+                                    .foregroundColor(.secondary)
                             }
                         }
                         
@@ -147,7 +175,15 @@ public struct RegisterFormView: View {
                             FormDropdown(label: "Kota/Kabupaten", placeholder: "Pilih Kota/Kabupaten", selection: $viewModel.domicileCity, options: viewModel.cities)
                             FormDropdown(label: "Kecamatan", placeholder: "Pilih Kecamatan", selection: $viewModel.domicileDistrict, options: viewModel.districts)
                             FormDropdown(label: "Kelurahan", placeholder: "Pilih Kelurahan", selection: $viewModel.domicileVillage, options: viewModel.villages)
-                            FormTextField(label: "Kode Pos", placeholder: "Masukkan Kode Pos", text: $viewModel.domicilePostalCode, keyboardType: .numberPad)
+                            FormTextField(
+                                label: "Kode Pos",
+                                placeholder: "Masukkan Kode Pos",
+                                text: $viewModel.domicilePostalCode,
+                                keyboardType: .numberPad,
+                                helpText: !viewModel.domicilePostalCode.isEmpty && !viewModel.isDomicilePostalCodeValid ? "Harus 5 digit" : nil,
+                                isError: !viewModel.domicilePostalCode.isEmpty && !viewModel.isDomicilePostalCodeValid,
+                                maxLength: 5
+                            )
                         }
                     }
                     
@@ -173,7 +209,7 @@ public struct RegisterFormView: View {
             VStack {
                 HStack {
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                        Image(systemName: "arrow.left").foregroundColor(.black)
+                        Image(systemName: "arrow.left").foregroundColor(.primary)
                     }
                     Text("Tambah Data")
                         .font(.headline)
@@ -182,7 +218,7 @@ public struct RegisterFormView: View {
                 }
                 .padding()
                 .padding(.top, (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.keyWindow?.safeAreaInsets.top ?? 0)
-                .background(Color.white)
+                .background(Color(UIColor.systemBackground))
                 Divider()
             }
             .ignoresSafeArea(edges: .top)
@@ -256,6 +292,31 @@ public struct RegisterFormView: View {
                 }
             }
         }
+        .onChange(of: viewModel.showOfflineSaveMessage) { _, success in
+            if success {
+                toastMessage = "Tidak ada internet. Data disimpan sebagai draft."
+                withAnimation { showToast = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation { showToast = false }
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }
+        }
+        .alert(item: Binding<ErrorMessage?>(
+            get: { viewModel.errorMessage.map { ErrorMessage(message: $0) } },
+            set: { _ in viewModel.errorMessage = nil }
+        )) { error in
+            Alert(
+                title: Text("Gagal"),
+                message: Text(error.message),
+                dismissButton: .default(Text("OK"))
+            )
+        }
+    }
+    
+    struct ErrorMessage: Identifiable {
+        let id = UUID()
+        let message: String
     }
 }
 

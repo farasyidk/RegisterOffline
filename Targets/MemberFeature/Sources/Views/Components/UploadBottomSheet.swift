@@ -12,7 +12,7 @@ struct UploadBottomSheet: View {
     
     var body: some View {
         ZStack {
-            Color.white.ignoresSafeArea()
+            Color(UIColor.systemBackground).ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -20,7 +20,7 @@ struct UploadBottomSheet: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                     }
                     
                     Text(isBulk ? "Upload Semua Data" : "Upload Data")
@@ -46,7 +46,7 @@ struct UploadBottomSheet: View {
                     VStack(spacing: 8) {
                         Text(isBulk ? "Apakah kamu yakin ingin upload semua data?" : "Apakah kamu yakin ingin upload data ini?")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
                         
                         Text(isBulk ? "Pastikan kamu sudah mengisi semua data yang diperlukan dengan benar, ya!" : "Data akan dikirimkan ke server untuk proses verifikasi.")
@@ -76,21 +76,21 @@ struct UploadBottomSheet: View {
                             .cornerRadius(10)
                     }
                     
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Text("Batal")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.white)
-                            .foregroundColor(Color.brandDarkBlue)
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.brandDarkBlue, lineWidth: 1)
-                            )
-                    }
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Text("Batal")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color(UIColor.secondarySystemBackground))
+                                .foregroundColor(Color.brandDarkBlue)
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.brandDarkBlue, lineWidth: 1)
+                                )
+                        }
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 34)

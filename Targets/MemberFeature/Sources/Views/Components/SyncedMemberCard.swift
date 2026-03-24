@@ -63,8 +63,9 @@ struct SyncedMemberCard: View {
                 .cornerRadius(12)
         }
         .padding()
-        .background(Color.white)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(12)
+
         .padding(.horizontal)
         .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
     }

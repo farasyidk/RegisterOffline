@@ -13,7 +13,7 @@ public struct PhotoUploadBox: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.gray.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [5]))
                     .frame(height: 100)
-                    .background(Color.white)
+                    .background(Color(UIColor.secondarySystemBackground))
                 
                 Image(systemName: "camera.fill")
                     .foregroundColor(Color.brandDarkBlue)

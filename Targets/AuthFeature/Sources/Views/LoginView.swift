@@ -56,16 +56,13 @@ public struct LoginView: View {
                                 Text("Email")
                                     .font(.subheadline)
                                     .foregroundColor(.primary)
-                                Text("*")
-                                    .font(.subheadline)
-                                    .foregroundColor(.red)
                             }
                             
                             TextField("Masukkan email di sini", text: $viewModel.email)
                                 .keyboardType(.emailAddress)
                                 .autocapitalization(.none)
                                 .padding()
-                                .background(Color.white)
+                                .background(Color(UIColor.secondarySystemBackground))
                                 .cornerRadius(8)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
@@ -97,7 +94,7 @@ public struct LoginView: View {
                                 }
                             }
                             .padding()
-                            .background(Color.white)
+                            .background(Color(UIColor.secondarySystemBackground))
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)

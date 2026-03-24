@@ -15,7 +15,7 @@ public struct LogoutBottomSheet: View {
             HStack {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                         .font(.system(size: 18, weight: .medium))
                 }
                 Text("Keluar")
@@ -68,7 +68,7 @@ public struct LogoutBottomSheet: View {
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.white)
+                                .background(Color(UIColor.secondarySystemBackground))
                                 .foregroundColor(Color.brandDarkBlue)
                                 .cornerRadius(10)
                                 .overlay(

@@ -20,7 +20,7 @@ public struct FormDropdown: View {
             HStack(spacing: 2) {
                 Text(label)
                     .font(.footnote)
-                    .foregroundColor(Color(UIColor.darkGray))
+                    .foregroundColor(.secondary)
                 if isMandatory {
                     Text("*")
                         .font(.footnote)
@@ -37,13 +37,13 @@ public struct FormDropdown: View {
             } label: {
                 HStack {
                     Text(selection.isEmpty ? placeholder : selection)
-                        .foregroundColor(selection.isEmpty ? Color(UIColor.placeholderText) : .black)
+                        .foregroundColor(selection.isEmpty ? Color(UIColor.placeholderText) : .primary)
                     Spacer()
                     Image(systemName: "chevron.down")
                         .foregroundColor(.gray)
                 }
                 .padding()
-                .background(Color.white)
+                .background(Color(UIColor.secondarySystemBackground))
                 .cornerRadius(8)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)

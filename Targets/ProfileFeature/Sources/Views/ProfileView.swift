@@ -16,7 +16,7 @@ public struct ProfileView: View {
     
     public var body: some View {
         ZStack {
-            Color(white: 0.96) // Slightly darker background for better card contrast
+            Color(UIColor.systemGroupedBackground) // Adaptive background
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -24,7 +24,7 @@ public struct ProfileView: View {
                 HStack(spacing: 16) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "arrow.left")
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .font(.title3)
                     }
                     Text("Profile")
@@ -33,7 +33,7 @@ public struct ProfileView: View {
                     Spacer()
                 }
                 .padding()
-                .background(Color.white)
+                .background(Color(UIColor.systemBackground))
                 
                 if viewModel.isLoading {
                     Spacer()
@@ -83,7 +83,7 @@ public struct ProfileView: View {
                                 Divider().padding(.leading, 50)
                                 MenuRow(icon: "questionmark.circle", title: "Bantuan")
                             }
-                            .background(Color.white)
+                            .background(Color(UIColor.secondarySystemGroupedBackground))
                             .cornerRadius(12)
                             .padding(.horizontal)
                             
@@ -101,7 +101,7 @@ public struct ProfileView: View {
                                         .font(.caption)
                                 }
                                 .padding()
-                                .background(Color.white)
+                                .background(Color(UIColor.secondarySystemGroupedBackground))
                                 .cornerRadius(12)
                             }
                             .padding(.horizontal)
@@ -146,10 +146,10 @@ struct MenuRow: View {
         Button(action: {}) {
             HStack(spacing: 16) {
                 Image(systemName: icon)
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .frame(width: 24)
                 Text(title)
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .foregroundColor(.gray.opacity(0.5))
