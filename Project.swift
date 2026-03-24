@@ -3,8 +3,8 @@ import ProjectDescription
 let project = Project(
     name: "RegisterOffline",
     settings: .settings(configurations: [
-        .debug(name: "Test", xcconfig: "Targets/App/Test.xcconfig"),
-        .release(name: "Production", xcconfig: "Targets/App/Prod.xcconfig")
+        .debug(name: "Debug", xcconfig: "Targets/App/Test.xcconfig"),
+        .release(name: "Release", xcconfig: "Targets/App/Prod.xcconfig")
     ]),
     targets: [
         .target(
@@ -12,6 +12,7 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "$(APP_BUNDLE_ID)",
+            deploymentTargets: .iOS("17.6"),
             infoPlist: .extendingDefault(with: [
                 "CFBundleDisplayName": "$(APP_NAME)",
                 "UILaunchScreen": [:],
@@ -26,8 +27,7 @@ let project = Project(
                 .target(name: "DesignSystem"),
                 .target(name: "AuthFeature"),
                 .target(name: "ProfileFeature"),
-                .target(name: "MemberFeature"),
-                .target(name: "SyncFeature")
+                .target(name: "MemberFeature")
             ]
         ),
         .target(
@@ -35,6 +35,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.zenith.coreprotocol",
+            deploymentTargets: .iOS("17.6"),
             infoPlist: .default,
             sources: ["Targets/CoreProtocol/Sources/**"],
             dependencies: []
@@ -44,6 +45,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.zenith.core",
+            deploymentTargets: .iOS("17.6"),
             infoPlist: .default,
             sources: ["Targets/Core/Sources/**"],
             dependencies: [
@@ -55,16 +57,17 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.zenith.designsystem",
+            deploymentTargets: .iOS("17.6"),
             infoPlist: .default,
             sources: ["Targets/DesignSystem/Sources/**"],
-            resources: ["Targets/DesignSystem/Resources/**"],
-            dependencies: []
+            resources: ["Targets/DesignSystem/Resources/**"]
         ),
         .target(
             name: "AuthFeature",
             destinations: .iOS,
             product: .framework,
             bundleId: "com.zenith.authfeature",
+            deploymentTargets: .iOS("17.6"),
             infoPlist: .default,
             sources: ["Targets/AuthFeature/Sources/**"],
             dependencies: [
@@ -78,6 +81,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.zenith.profilefeature",
+            deploymentTargets: .iOS("17.6"),
             infoPlist: .default,
             sources: ["Targets/ProfileFeature/Sources/**"],
             dependencies: [
@@ -91,6 +95,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.zenith.memberfeature",
+            deploymentTargets: .iOS("17.6"),
             infoPlist: .default,
             sources: ["Targets/MemberFeature/Sources/**"],
             dependencies: [
@@ -99,37 +104,25 @@ let project = Project(
                 .target(name: "DesignSystem")
             ]
         ),
-        .target(
-            name: "SyncFeature",
-            destinations: .iOS,
-            product: .framework,
-            bundleId: "com.zenith.syncfeature",
-            infoPlist: .default,
-            sources: ["Targets/SyncFeature/Sources/**"],
-            dependencies: [
-                .target(name: "CoreProtocol"),
-                .target(name: "Core")
-            ]
-        ),
     ],
     schemes: [
         .scheme(
-            name: "App-Test",
+            name: "Test",
             shared: true,
             buildAction: .buildAction(targets: ["App"]),
-            runAction: .runAction(configuration: "Test"),
-            archiveAction: .archiveAction(configuration: "Test"),
-            profileAction: .profileAction(configuration: "Test"),
-            analyzeAction: .analyzeAction(configuration: "Test")
+            runAction: .runAction(configuration: "Debug"),
+            archiveAction: .archiveAction(configuration: "Debug"),
+            profileAction: .profileAction(configuration: "Debug"),
+            analyzeAction: .analyzeAction(configuration: "Debug")
         ),
         .scheme(
-            name: "App-Production",
+            name: "Production",
             shared: true,
             buildAction: .buildAction(targets: ["App"]),
-            runAction: .runAction(configuration: "Production"),
-            archiveAction: .archiveAction(configuration: "Production"),
-            profileAction: .profileAction(configuration: "Production"),
-            analyzeAction: .analyzeAction(configuration: "Test")
+            runAction: .runAction(configuration: "Release"),
+            archiveAction: .archiveAction(configuration: "Release"),
+            profileAction: .profileAction(configuration: "Release"),
+            analyzeAction: .analyzeAction(configuration: "Release")
         )
     ]
 )
