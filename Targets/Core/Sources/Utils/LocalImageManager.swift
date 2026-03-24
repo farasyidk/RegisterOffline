@@ -29,7 +29,7 @@ public final class LocalImageManager {
         var compressionQuality: CGFloat = 0.8
         var imageData = image.jpegData(compressionQuality: compressionQuality)
         
-        while let data = imageData, data.count > 1_000_000, compressionQuality > 0.1 {
+        while let data = imageData, data.count > 2_000_000, compressionQuality > 0.1 {
             compressionQuality -= 0.1
             imageData = image.jpegData(compressionQuality: compressionQuality)
         }

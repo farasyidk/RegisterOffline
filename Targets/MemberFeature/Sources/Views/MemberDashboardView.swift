@@ -28,15 +28,18 @@ public struct MemberDashboardView: View {
     // Auth route up to App level
     public let profileViewProvider: () -> AnyView
     public let loginViewProvider: () -> AnyView
+    public let registerViewProvider: (MemberEntity?) -> AnyView
     public let onLogout: () -> Void
     
     public init(viewModel: MemberDashboardViewModel, 
                 profileViewProvider: @escaping () -> AnyView, 
                 loginViewProvider: @escaping () -> AnyView, 
+                registerViewProvider: @escaping (MemberEntity?) -> AnyView,
                 onLogout: @escaping () -> Void) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.profileViewProvider = profileViewProvider
         self.loginViewProvider = loginViewProvider
+        self.registerViewProvider = registerViewProvider
         self.onLogout = onLogout
     }
     
@@ -68,12 +71,6 @@ public struct MemberDashboardView: View {
                   onLogout: onLogout)
         .background(navigationLinksView)
         .navigationBarHidden(true)
-        .onAppear {
-            Task {
-                await viewModel.fetchDraftMembers()
-                await viewModel.fetchProfile()
-            }
-        }
         .onChange(of: viewModel.isUploadSuccess) { _, success in
             if success {
                 withAnimation { showToast = true }
@@ -88,6 +85,38 @@ public struct MemberDashboardView: View {
                 showUnauthorizedAlert = true
             }
         }
+        .onAppear {
+            viewModel.startNetworkMonitoring()
+            Task {
+                await viewModel.fetchDraftMembers()
+                await viewModel.fetchProfile()
+                await viewModel.fetchSyncedMembers()
+            }
+        }
+        .onChange(of: selectedTab) { _, newValue in
+            if newValue == .synced {
+                Task { await viewModel.fetchSyncedMembers() }
+            }
+        }
+        .onDisappear {
+            viewModel.stopNetworkMonitoring()
+        }
+        .alert(item: Binding<ErrorMessage?>(
+            get: { viewModel.errorMessage.map { ErrorMessage(message: $0) } },
+            set: { _ in viewModel.errorMessage = nil }
+        )) { error in
+            Alert(
+                title: Text("Pemberitahuan"),
+                message: Text(error.message),
+                dismissButton: .default(Text("OK"))
+            )
+        }
+    }
+    
+    // Helper struct for alert item
+    struct ErrorMessage: Identifiable {
+        let id = UUID()
+        let message: String
     }
     
     // MARK: - Subviews
@@ -122,7 +151,7 @@ public struct MemberDashboardView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(Color.white)
+                .background(Color(UIColor.secondarySystemBackground))
                 .cornerRadius(20)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
@@ -132,7 +161,7 @@ public struct MemberDashboardView: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
     }
     
     @ViewBuilder
@@ -146,7 +175,7 @@ public struct MemberDashboardView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         Divider()
     }
     
@@ -155,15 +184,26 @@ public struct MemberDashboardView: View {
         ScrollView {
             switch selectedTab {
             case .draft:
-                DraftTabView(
-                    viewModel: viewModel,
-                    editingMember: $editingMember,
-                    isNavigateToEditing: $isNavigateToEditing,
-                    selectedMemberForUpload: $selectedMemberForUpload,
-                    showingUploadSheet: $showingUploadSheet
-                )
+                if viewModel.draftMembers.isEmpty {
+                    EmptyStateView()
+                } else {
+                    DraftTabView(
+                        viewModel: viewModel,
+                        editingMember: $editingMember,
+                        isNavigateToEditing: $isNavigateToEditing,
+                        selectedMemberForUpload: $selectedMemberForUpload,
+                        showingUploadSheet: $showingUploadSheet
+                    )
+                }
             case .synced:
-                SyncedTabView(viewModel: viewModel)
+                if viewModel.syncedMembers.isEmpty {
+                    EmptyStateView(
+                        title: "Belum ada data terkirim", 
+                        message: "Data yang sudah Anda upload akan muncul di sini."
+                    )
+                } else {
+                    SyncedTabView(viewModel: viewModel)
+                }
             }
         }
     }
@@ -192,7 +232,7 @@ public struct MemberDashboardView: View {
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.white)
+                .background(Color(UIColor.secondarySystemBackground))
                 .foregroundColor(Color.brandDarkBlue)
                 .cornerRadius(8)
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.brandDarkBlue, lineWidth: 1))
@@ -200,7 +240,7 @@ public struct MemberDashboardView: View {
             .disabled(viewModel.draftMembers.isEmpty)
         }
         .padding()
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
     }
     
     @ViewBuilder
@@ -210,7 +250,7 @@ public struct MemberDashboardView: View {
                 Color.black.opacity(0.3).ignoresSafeArea()
                 ProgressView(viewModel.uploadProgressMessage ?? "Processing...")
                     .padding()
-                    .background(Color.white)
+                    .background(Color(UIColor.secondarySystemBackground).opacity(0.9))
                     .cornerRadius(12)
             }
             .zIndex(2)
@@ -242,27 +282,16 @@ public struct MemberDashboardView: View {
     private var navigationLinksView: some View {
         Color.clear
             .navigationDestination(isPresented: $isShowingAddData) {
-                RegisterFormView(viewModel: RegisterViewModel(
-                    memberRepository: MemberRepository(
-                        networkService: NetworkManager(tokenProvider: KeychainTokenProvider()), 
-                        modelContext: modelContext
-                    )
-                ))
-                .onDisappear {
-                    Task { await viewModel.fetchDraftMembers() }
-                }
+                registerViewProvider(nil)
+                    .onDisappear {
+                        Task { await viewModel.fetchDraftMembers() }
+                    }
             }
             .navigationDestination(item: $editingMember) { member in
-                RegisterFormView(viewModel: RegisterViewModel(
-                    memberRepository: MemberRepository(
-                        networkService: NetworkManager(tokenProvider: KeychainTokenProvider()), 
-                        modelContext: modelContext
-                    ),
-                    editingMember: member
-                ))
-                .onDisappear {
-                    Task { await viewModel.fetchDraftMembers() }
-                }
+                registerViewProvider(member)
+                    .onDisappear {
+                        Task { await viewModel.fetchDraftMembers() }
+                    }
             }
             .navigationDestination(isPresented: $isShowingProfile) {
                 profileViewProvider()

@@ -8,8 +8,27 @@ public final class RegisterViewModel: ObservableObject {
     private let memberRepository: MemberRepositoryProtocol
     
     // Data Utama
-    @Published public var phoneNumber: String = ""
-    @Published public var nik: String = ""
+    @Published public var phoneNumber: String = "" {
+        didSet {
+            let filtered = phoneNumber.filter { $0.isNumber }
+            if filtered.count > 15 {
+                phoneNumber = String(filtered.prefix(15))
+            } else if phoneNumber != filtered {
+                phoneNumber = filtered
+            }
+        }
+    }
+    
+    @Published public var nik: String = "" {
+        didSet {
+            let filtered = nik.filter { $0.isNumber }
+            if filtered.count > 16 {
+                nik = String(filtered.prefix(16))
+            } else if nik != filtered {
+                nik = filtered
+            }
+        }
+    }
     @Published public var ktpPaths: [String] = []
     
     // Opsi Data Statis (Dropdown)
@@ -35,7 +54,19 @@ public final class RegisterViewModel: ObservableObject {
     @Published public var ktpCity: String = ""
     @Published public var ktpDistrict: String = ""
     @Published public var ktpVillage: String = ""
-    @Published public var ktpPostalCode: String = ""
+    @Published public var ktpPostalCode: String = "" {
+        didSet {
+            let filtered = ktpPostalCode.filter { $0.isNumber }
+            if filtered.count > 5 {
+                ktpPostalCode = String(filtered.prefix(5))
+            } else if ktpPostalCode != filtered {
+                ktpPostalCode = filtered
+            }
+            if isDomicileSameAsKtp {
+                domicilePostalCode = ktpPostalCode
+            }
+        }
+    }
     
     // Alamat Domisili
     @Published public var isDomicileSameAsKtp: Bool = false {
@@ -55,13 +86,23 @@ public final class RegisterViewModel: ObservableObject {
     @Published public var domicileCity: String = ""
     @Published public var domicileDistrict: String = ""
     @Published public var domicileVillage: String = ""
-    @Published public var domicilePostalCode: String = ""
+    @Published public var domicilePostalCode: String = "" {
+        didSet {
+            let filtered = domicilePostalCode.filter { $0.isNumber }
+            if filtered.count > 5 {
+                domicilePostalCode = String(filtered.prefix(5))
+            } else if domicilePostalCode != filtered {
+                domicilePostalCode = filtered
+            }
+        }
+    }
     
     // View States
     @Published public var isSaving: Bool = false
     @Published public var errorMessage: String? = nil
     @Published public var isSavedSuccessfully: Bool = false
     @Published public var isUploadSuccessfully: Bool = false
+    @Published public var showOfflineSaveMessage: Bool = false
     
     private var editingMember: MemberEntity?
     
@@ -114,6 +155,22 @@ public final class RegisterViewModel: ObservableObject {
         }
     }
     
+    public var isPhoneValid: Bool {
+        phoneNumber.count >= 8 && phoneNumber.count <= 15
+    }
+    
+    public var isNikValid: Bool {
+        nik.count == 16
+    }
+    
+    public var isKtpPostalCodeValid: Bool {
+        ktpPostalCode.count == 5
+    }
+    
+    public var isDomicilePostalCodeValid: Bool {
+        isDomicileSameAsKtp || domicilePostalCode.count == 5
+    }
+
     public var isFormValid: Bool {
         !phoneNumber.isEmpty && !nik.isEmpty && ktpPaths.count >= 1
     }
@@ -124,19 +181,15 @@ public final class RegisterViewModel: ObservableObject {
         return formatter.string(from: birthDate)
     }
     
-    public func saveDraft() async {
-        guard isFormValid else { return }
-        isSaving = true
-        errorMessage = nil
-        
+    private func createEntity(withStatus status: String) -> MemberEntity {
         let entity: MemberEntity
         if let editing = editingMember {
             entity = editing
             entity.name = fullName
             entity.nik = nik
-            entity.syncStatus = "Draft"
+            entity.syncStatus = status
         } else {
-            entity = MemberEntity(name: fullName, nik: nik, syncStatus: "Draft")
+            entity = MemberEntity(name: fullName, nik: nik, syncStatus: status)
         }
         entity.phone = phoneNumber
         entity.birthPlace = birthPlace
@@ -165,6 +218,15 @@ public final class RegisterViewModel: ObservableObject {
         if ktpPaths.count > 1 {
             entity.ktpSecondaryLocalPath = ktpPaths[1]
         }
+        return entity
+    }
+    
+    public func saveDraft() async {
+        guard isFormValid else { return }
+        isSaving = true
+        errorMessage = nil
+        
+        let entity = createEntity(withStatus: "Draft")
         
         do {
             try await memberRepository.saveDraftMember(entity)
@@ -187,48 +249,20 @@ public final class RegisterViewModel: ObservableObject {
         isSaving = true
         errorMessage = nil
         
-        let entity: MemberEntity
-        if let editing = editingMember {
-            entity = editing
-            entity.name = fullName
-            entity.nik = nik
-            entity.syncStatus = "Synced"
-        } else {
-            entity = MemberEntity(name: fullName, nik: nik, syncStatus: "Synced")
-        }
-        entity.phone = phoneNumber
-        entity.birthPlace = birthPlace
-        entity.birthDate = formattedBirthDate
-        entity.gender = gender.isEmpty ? nil : gender
-        entity.status = status.isEmpty ? nil : status
-        entity.occupation = occupation.isEmpty ? nil : occupation
-        
-        entity.address = ktpAddress
-        entity.province = ktpProvince
-        entity.cityRegency = ktpCity
-        entity.district = ktpDistrict
-        entity.subDistrict = ktpVillage
-        entity.postalCode = ktpPostalCode
-        
-        entity.domicileAddress = domicileAddress
-        entity.domicileProvince = domicileProvince
-        entity.domicileCityRegency = domicileCity
-        entity.domicileDistrict = domicileDistrict
-        entity.domicileSubDistrict = domicileVillage
-        entity.domicilePostalCode = domicilePostalCode
-        
-        if ktpPaths.count > 0 {
-            entity.ktpLocalPath = ktpPaths[0]
-        }
-        if ktpPaths.count > 1 {
-            entity.ktpSecondaryLocalPath = ktpPaths[1]
-        }
+        let entity = createEntity(withStatus: "Synced")
         
         do {
             _ = try await memberRepository.uploadMember(entity)
+            try await memberRepository.saveDraftMember(entity)
             isUploadSuccessfully = true
         } catch {
-            errorMessage = error.localizedDescription
+            if let networkError = error as? NetworkError, networkError.isUnauthorized {
+                errorMessage = "Sesi telah berakhir. Silakan login kembali."
+            } else {
+                entity.syncStatus = "Draft"
+                try? await memberRepository.saveDraftMember(entity)
+                showOfflineSaveMessage = true
+            }
         }
         
         isSaving = false

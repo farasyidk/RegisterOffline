@@ -25,7 +25,7 @@ struct RegisterOfflineApp: App {
         
         self._authViewModel = StateObject(wrappedValue: AuthViewModel(authRepository: authRepo))
         
-        #if DEBUG
+        #if DEBUG && targetEnvironment(simulator)
         loadRocketSimConnect()
         #endif
     }
@@ -87,6 +87,15 @@ struct AppRootView: View {
                             },
                             loginViewProvider: {
                                 AnyView(LoginView(viewModel: authViewModel))
+                            },
+                            registerViewProvider: { member in
+                                AnyView(RegisterFormView(viewModel: RegisterViewModel(
+                                    memberRepository: MemberRepository(
+                                        networkService: networkManager,
+                                        modelContext: modelContext
+                                    ),
+                                    editingMember: member
+                                )))
                             },
                             onLogout: {
                                 authViewModel.logout()

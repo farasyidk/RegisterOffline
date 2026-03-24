@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 import CoreProtocol
 
+@MainActor
 public final class MemberRepository: MemberRepositoryProtocol {
     private let networkService: NetworkServiceProtocol
     private let modelContext: ModelContext
@@ -91,25 +92,27 @@ public final class MemberRepository: MemberRepositoryProtocol {
         if let dpos = member.domicilePostalCode { appendFormField(named: "kode_pos_domisili", value: dpos) }
         
         // Append Images
-        if let ktpPath = member.ktpLocalPath {
-            let ktpUrl = URL(fileURLWithPath: ktpPath)
+        if let ktpPath = member.ktpLocalPath, let ktpUrl = LocalImageManager.shared.getFileURL(for: ktpPath) {
             if let imgData = try? Data(contentsOf: ktpUrl) {
                 append("--\(boundary)\r\n")
                 append("Content-Disposition: form-data; name=\"ktp_file\"; filename=\"ktp_primary.jpg\"\r\n")
                 append("Content-Type: image/jpeg\r\n\r\n")
                 bodyData.append(imgData)
                 append("\r\n")
+            } else {
+                print("Failed to read KTP primary image from \(ktpUrl)")
             }
         }
         
-        if let secPath = member.ktpSecondaryLocalPath {
-            let secUrl = URL(fileURLWithPath: secPath)
+        if let secPath = member.ktpSecondaryLocalPath, let secUrl = LocalImageManager.shared.getFileURL(for: secPath) {
             if let imgData = try? Data(contentsOf: secUrl) {
                 append("--\(boundary)\r\n")
                 append("Content-Disposition: form-data; name=\"ktp_file_secondary\"; filename=\"ktp_second.jpg\"\r\n")
                 append("Content-Type: image/jpeg\r\n\r\n")
                 bodyData.append(imgData)
                 append("\r\n")
+            } else {
+                print("Failed to read KTP secondary image from \(secUrl)")
             }
         }
         

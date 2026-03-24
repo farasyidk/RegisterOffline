@@ -28,6 +28,15 @@ public struct DesignSystemAssets {
         return Image("upload_illustration")
     }
     
+    public static var emptyDataIllustration: Image {
+        #if canImport(UIKit)
+        if let uiImage = UIImage(named: "empty_data_illustration", in: bundle, compatibleWith: nil) {
+            return Image(uiImage: uiImage)
+        }
+        #endif
+        return Image("empty_data_illustration")
+    }
+    
     public static var bundle: Bundle {
         Bundle(for: DesignSystemMarker.self)
     }

@@ -2,6 +2,7 @@ import Foundation
 import CoreProtocol
 import Core
 import SwiftUI
+import Network
 
 @MainActor
 public final class MemberDashboardViewModel: ObservableObject {
@@ -17,11 +18,66 @@ public final class MemberDashboardViewModel: ObservableObject {
     @Published public var errorMessage: String? = nil
     @Published public var isUploadSuccess: Bool = false
     @Published public var isUnauthorized: Bool = false
+    @Published public var isOnline: Bool = true
+    
+    private var monitor: NWPathMonitor?
+    private var wasOffline = false
+    private var isBackgroundSyncing = false
     
     public init(memberRepository: MemberRepositoryProtocol, authRepository: AuthRepositoryProtocol) {
         self.memberRepository = memberRepository
         self.authRepository = authRepository
     }
+    
+    // MARK: - Network Monitoring
+    
+    public func startNetworkMonitoring() {
+        monitor = NWPathMonitor()
+        monitor?.pathUpdateHandler = { [weak self] path in
+            guard let self = self else { return }
+            let online = path.status == .satisfied
+            
+            Task { @MainActor in
+                self.isOnline = online
+                if online && self.wasOffline {
+                    // Back online! Trigger silent auto-sync
+                    await self.autoSyncDrafts()
+                }
+                self.wasOffline = !online
+            }
+        }
+        let queue = DispatchQueue(label: "NetworkMonitor")
+        monitor?.start(queue: queue)
+    }
+    
+    public func stopNetworkMonitoring() {
+        monitor?.cancel()
+        monitor = nil
+    }
+    
+    private func autoSyncDrafts() async {
+        guard !isLoading && !isBackgroundSyncing && !draftMembers.isEmpty else { return }
+        isBackgroundSyncing = true
+        
+        // No loading overlay for background sync, just background task
+        for member in draftMembers {
+            do {
+                _ = try await memberRepository.uploadMember(member)
+                try await memberRepository.updateMemberSyncStatus(id: member.id, status: "Synced")
+            } catch {
+                print("Background sync failed for \(member.name): \(error.localizedDescription)")
+                if let networkError = error as? NetworkError, networkError.isUnauthorized {
+                    isUnauthorized = true
+                    break
+                }
+            }
+        }
+        
+        await fetchDraftMembers()
+        isBackgroundSyncing = false
+    }
+    
+    // MARK: - API Operations
     
     public func fetchProfile() async {
         do {
@@ -62,6 +118,8 @@ public final class MemberDashboardViewModel: ObservableObject {
         }
         
         // 2. Refresh from API in background (no isLoading = true to avoid blocking UI)
+        guard isOnline else { return }
+        
         do {
             let apiMembers = try await memberRepository.getSyncedMembers()
             // 3. Background sync with local storage
@@ -88,6 +146,11 @@ public final class MemberDashboardViewModel: ObservableObject {
     }
     
     public func uploadSingle(member: MemberEntity) async {
+        guard isOnline else {
+            errorMessage = "Tidak ada koneksi internet. Data tetap tersimpan sebagai draft."
+            return
+        }
+        
         isLoading = true
         uploadProgressMessage = "Mengunggah \(member.name)..."
         do {
@@ -107,6 +170,11 @@ public final class MemberDashboardViewModel: ObservableObject {
     }
     
     public func uploadAllDrafts() async {
+        guard isOnline else {
+            errorMessage = "Tidak ada koneksi internet. Draft akan di-upload otomatis saat online."
+            return
+        }
+        
         guard !draftMembers.isEmpty else { return }
         isLoading = true
         var successCount = 0

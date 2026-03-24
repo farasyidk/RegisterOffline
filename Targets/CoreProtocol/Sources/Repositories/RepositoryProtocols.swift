@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 public protocol MemberRepositoryProtocol {
     func getAllDraftMembers() async throws -> [MemberEntity]
     func saveDraftMember(_ member: MemberEntity) async throws
