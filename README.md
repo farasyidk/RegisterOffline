@@ -162,16 +162,13 @@ RegisterOffline/
 │   │               └── EmptyStateView.swift
 │   │
 │   └── ProfileFeature/            # 👤 Fitur profil & logout
-│       └── Sources/
-│           ├── ViewModels/
-│           │   └── ProfileViewModel.swift
-│           └── Views/
-│               ├── ProfileView.swift
-│               └── LogoutBottomSheet.swift
-│
-├── assets/                        # Asset desain (referensi UI)
-├── ui/                            # Mockup / file desain
-└── API Mobile - Member Management.postman_collection.json  # Koleksi Postman API
+       └── Sources/
+           ├── ViewModels/
+           │   └── ProfileViewModel.swift
+           └── Views/
+               ├── ProfileView.swift
+               └── LogoutBottomSheet.swift
+
 ```
 
 ---
