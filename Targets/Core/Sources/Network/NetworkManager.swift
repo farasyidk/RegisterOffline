@@ -37,16 +37,17 @@ public final class NetworkManager: NetworkServiceProtocol {
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
-            if httpResponse.statusCode == 401 {
-                throw NetworkError.unauthorized
-            }
+            let errorMsg: String?
             if let errResp = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
-                if errResp.error == "Invalid Token" {
-                    throw NetworkError.unauthorized
-                }
-                throw NetworkError(errResp.error)
+                errorMsg = errResp.error
+            } else {
+                errorMsg = nil
             }
-            throw NetworkError("HTTP Error: \(httpResponse.statusCode)")
+            
+            if httpResponse.statusCode == 401 || errorMsg == "Invalid Token" {
+                throw NetworkError(errorMsg ?? "Silakan login kembali", isUnauthorized: true)
+            }
+            throw NetworkError(errorMsg ?? "HTTP Error: \(httpResponse.statusCode)")
         }
         
         do {
@@ -84,19 +85,17 @@ public final class NetworkManager: NetworkServiceProtocol {
         }
         
         guard (200...299).contains(httpResponse.statusCode) else {
-            if httpResponse.statusCode == 401 {
-                throw NetworkError.unauthorized
-            }
+            let errorMsg: String?
             if let errResp = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
-                if errResp.error == "Invalid Token" {
-                    throw NetworkError.unauthorized
-                }
-                throw NetworkError(errResp.error)
+                errorMsg = errResp.error
+            } else {
+                errorMsg = nil
             }
-            if let errorMsg = String(data: data, encoding: .utf8) {
-                print("Multipart error details: \(errorMsg)")
+            
+            if httpResponse.statusCode == 401 || errorMsg == "Invalid Token" {
+                throw NetworkError(errorMsg ?? "Silakan login kembali", isUnauthorized: true)
             }
-            throw NetworkError("HTTP Error: \(httpResponse.statusCode)")
+            throw NetworkError(errorMsg ?? "HTTP Error: \(httpResponse.statusCode)")
         }
         
         do {

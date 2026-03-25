@@ -31,6 +31,8 @@ public final class AuthViewModel: ObservableObject {
         do {
             _ = try await authRepository.login(email: email, password: password)
             isAuthenticated = true
+        } catch let error as NetworkError {
+            errorMessage = error.message
         } catch {
             errorMessage = error.localizedDescription
         }
