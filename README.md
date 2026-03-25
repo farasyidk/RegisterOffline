@@ -2,6 +2,7 @@
 
 Aplikasi iOS untuk pendaftaran anggota secara offline dengan kemampuan sinkronisasi otomatis saat koneksi internet tersedia.
 
+Demo application: [video](https://drive.google.com/drive/folders/1PambYbY7CXPF9DIJYb6LZTIizCnuA3Zf?usp=sharing)
 ---
 
 ## Persyaratan
